@@ -4,7 +4,7 @@ import { LedgerWalletSignerProviderNative } from './signers/LedgerWalletSignerPr
 // eslint-disable-next-line     @typescript-eslint/no-unused-vars
 import { LedgerWalletSignerProviderWebusb } from './signers/LedgerWalletSignerProviderWebusb';
 
-export const useWebusbForLedger = false;
+export const useWebusbForLedger = true;
 export const LEDGER_WALLET_TYPE = 'ledger';
 export const NORMAL_WALLET_TYPE = 'normal';
 export function createLedgerDevice(): ISignerProvider {

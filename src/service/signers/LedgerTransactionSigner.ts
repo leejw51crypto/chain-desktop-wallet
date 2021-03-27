@@ -59,7 +59,7 @@ export class LedgerTransactionSigner implements ITransactionSigner {
       amount: new cro.Coin(transaction.amount, Units.BASE),
     });
 
-    const pubkeyoriginal = await (
+    const pubkeyoriginal = (
       await this.signerProvider.getPubKey(this.addressIndex, false)
     ).toUint8Array();
     const pubkey = Bytes.fromUint8Array(pubkeyoriginal.slice(1));
@@ -195,6 +195,33 @@ export class LedgerTransactionSigner implements ITransactionSigner {
   ): Promise<string> {
     const { cro, rawTx } = this.getTransactionInfo(phrase, transaction);
 
+    try {
+      {
+        const msgDelegate = new cro.staking.MsgDelegate({
+          delegatorAddress: transaction.delegatorAddress,
+          validatorAddress: transaction.sourceValidatorAddress,
+          amount: new cro.Coin(transaction.amount, Units.BASE),
+        });
+        console.log(`msgDelegate ${JSON.stringify(msgDelegate.toRawAminoMsg())}`);
+      }
+
+      // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+      const m2 = new cro.staking.MsgBeginRedelegate({
+        delegatorAddress: transaction.delegatorAddress,
+        validatorSrcAddress: transaction.sourceValidatorAddress,
+        validatorDstAddress: transaction.destinationValidatorAddress,
+        amount: new cro.Coin(transaction.amount, Units.BASE),
+      });
+
+      m2.validateAddresses();
+      console.log(`m2 json2~~~ ${JSON.stringify(m2)}`);
+      const msg1 = m2.toRawAminoMsg();
+      console.log(`MsgDelegate json2~~~ ${msg1}`);
+    } catch (e) {
+      console.log(`error ${e.toString()}`);
+    }
+    console.log('***************');
+
     const msgBeginRedelegate = new cro.staking.MsgBeginRedelegate({
       delegatorAddress: transaction.delegatorAddress,
       validatorSrcAddress: transaction.sourceValidatorAddress,
@@ -202,7 +229,9 @@ export class LedgerTransactionSigner implements ITransactionSigner {
       amount: new cro.Coin(transaction.amount, Units.BASE),
     });
 
-    const pubkeyoriginal = await (await this.signerProvider.getPubKey(0, false)).toUint8Array();
+    const pubkeyoriginal = (
+      await this.signerProvider.getPubKey(this.addressIndex, false)
+    ).toUint8Array();
     const pubkey = Bytes.fromUint8Array(pubkeyoriginal.slice(1));
 
     const signableTx = rawTx
@@ -216,7 +245,7 @@ export class LedgerTransactionSigner implements ITransactionSigner {
       .toSignable();
 
     const bytesMessage: Bytes = signableTx.toSignDocument(0);
-
+    console.log(`signature ${bytesMessage}`);
     const signature = await this.signerProvider.sign(bytesMessage);
     return signableTx
       .setSignature(0, signature)

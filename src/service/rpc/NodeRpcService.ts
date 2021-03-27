@@ -61,7 +61,9 @@ export class NodeRpcService implements INodeRpcService {
     const TIME_OUT_ERROR = 'timed out waiting for tx to be included in a block';
     try {
       const signedBytes = Bytes.fromHexString(signedTxHex).toUint8Array();
+      console.log(`signed bytes ${signedBytes}`);
       const broadcastResponse = await this.client.broadcastTx(signedBytes);
+      console.log(`fail ${JSON.stringify(broadcastResponse)}`);
       if (isBroadcastTxFailure(broadcastResponse)) {
         // noinspection ExceptionCaughtLocallyJS
         throw new TypeError(`Transaction failed: ${JSON.stringify(broadcastResponse)}`);

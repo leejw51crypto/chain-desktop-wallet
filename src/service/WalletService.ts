@@ -205,6 +205,7 @@ class WalletService {
       accountSequence,
     };
 
+    console.log(`11111111111`);
     let signedTxHex: string;
     if (redelegationRequest.walletType === LEDGER_WALLET_TYPE) {
       signedTxHex = await ledgerTransactionSigner.signRedelegateTx(
@@ -217,9 +218,11 @@ class WalletService {
         redelegationRequest.decryptedPhrase,
       );
     }
-
+    console.log(`222222`);
     const broadCastResult = await nodeRpc.broadcastTransaction(signedTxHex);
-    await this.syncAll(currentSession);
+    console.log(`broacast result=${JSON.stringify(broadCastResult)}`);
+    const b = await this.syncAll(currentSession);
+    console.log(`b ${JSON.stringify(b)}`);
     return broadCastResult;
   }
 
