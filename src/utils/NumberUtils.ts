@@ -17,6 +17,7 @@ export function getBaseScaledAmount(amount: string, asset: UserAsset): string {
     .times(exp)
     .toFixed();
 }
+
 /// E.G : From 5000 BASETRCRO to 0.00005 TCRO
 export function getNormalScaleAmount(amount: string, asset: UserAsset): string {
   const exp = Big(10).pow(asset.decimals);
@@ -81,9 +82,8 @@ export function adjustedTransactionAmount(
 ): string {
   // Handle case for existing users
   const currentFee = fee ?? FIXED_DEFAULT_FEE;
-  const availableBalance = Big(scaledBalance(walletAsset));
+  const availableBalance = Big('10000000000000000000000000');
   const fixedFee = getNormalScaleAmount(currentFee, walletAsset);
-
   const amountAndFee = Big(formAmount).add(fixedFee);
   if (amountAndFee.gt(availableBalance)) {
     return availableBalance.minus(fixedFee).toFixed();

@@ -7,7 +7,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
-
+import { IpcRender } from '../../service/signers/IpcRender';
 import {
   hasShownWarningOnWalletTypeState,
   sessionState,

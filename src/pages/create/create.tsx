@@ -22,6 +22,8 @@ import { AnalyticsService } from '../../service/analytics/AnalyticsService';
 import LedgerModalPopup from '../../components/LedgerModalPopup/LedgerModalPopup';
 import SuccessCheckmark from '../../components/SuccessCheckmark/SuccessCheckmark';
 import IconLedger from '../../svg/IconLedger';
+import { UserAssetType } from '../../models/UserAsset';
+import { ISignerProvider } from '../../service/signers/SignerProvider';
 import {
   createLedgerDevice,
   detectConditionsError,
@@ -381,6 +383,18 @@ const FormCreate: React.FC<FormCreateProps> = props => {
 
     try {
       const createdWallet = new WalletCreator(createOptions).create();
+      const targetWallet = createdWallet.wallet;
+      if (targetWallet.walletType === LEDGER_WALLET_TYPE) {
+        const device: ISignerProvider = createLedgerDevice();
+        alert('please, open ethereum app');
+        const ethAddresss = await device.getEthAddress(targetWallet.addressIndex);
+        alert(`created eth address ${ethAddresss}`);
+        const evmAsset = createdWallet.assets.filter(
+          asset => asset.assetType === UserAssetType.EVM,
+        )[0];
+        evmAsset.address = ethAddresss;
+      }
+
       await walletService.saveAssets(createdWallet.assets);
 
       setWalletTempBackupSeed(createdWallet.wallet);
