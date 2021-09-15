@@ -7,7 +7,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
-
+import { IpcRender } from '../../service/signers/IpcRender';
 import {
   hasShownWarningOnWalletTypeState,
   sessionState,
@@ -46,6 +46,8 @@ const { TabPane } = Tabs;
 const { Meta } = Card;
 
 const maxNftPreview = 5;
+
+const myRender = new IpcRender();
 
 const isWalletNotLive = (config: WalletConfig) => {
   return config.nodeUrl === NOT_KNOWN_YET_VALUE && config.indexingUrl === NOT_KNOWN_YET_VALUE;
@@ -306,6 +308,10 @@ const HomePage = () => {
     }
   }, [fetchingDB]);
 
+  const clickTest = async () => {
+    myRender.hello();
+  };
+
   return (
     <Layout className="site-layout">
       <Header className="site-layout-background">
@@ -319,6 +325,10 @@ const HomePage = () => {
         />
       </Header>
       <Content>
+        <div>
+          <Button onClick={clickTest}>Click Me!</Button>
+        </div>
+
         <div className="site-layout-background balance-container">
           {/* <div className="balance">
             <div className="title">TOTAL ASSET BALANCE</div>

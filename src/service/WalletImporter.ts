@@ -29,6 +29,7 @@ export class WalletImporter extends WalletOps {
       identifier: walletIdentifier,
       name: options.walletName,
       address: defaultAsset?.address || '',
+      ethAddress: '',
       config: options.config,
       encryptedPhrase,
       hasBeenEncrypted: false,

@@ -78,6 +78,11 @@ import { CronosClient } from './cronos/CronosClient';
 import { evmTransactionSigner } from './signers/EvmTransactionSigner';
 import { STATIC_ASSET_COUNT } from '../config/StaticAssets';
 
+let electron: any;
+if (window.require) {
+  electron = window.require('electron');
+}
+
 class WalletService {
   private readonly storageService: StorageService;
 
@@ -96,15 +101,19 @@ class WalletService {
 
     const currentSession = await this.storageService.retrieveCurrentSession();
     const fromAddress = currentSession.wallet.address;
+    const walletAddressIndex = currentSession.wallet.addressIndex;
 
     switch (currentAsset.assetType) {
       case UserAssetType.EVM:
         try {
+          /*
           if (currentAsset?.config?.isLedgerSupportDisabled) {
+            alert('call evm');
             throw TypeError(
               `${LEDGER_WALLET_TYPE} not supported yet for ${transferRequest.walletType} assets`,
             );
           }
+          */
 
           if (!currentAsset.address || !currentAsset.config?.nodeUrl) {
             throw TypeError(`Missing asset config: ${currentAsset.config}`);
@@ -132,15 +141,16 @@ class WalletService {
             value: web3.utils.toWei(transferRequest.amount, 'ether'),
           };
 
-          transfer.nonce = await cronosClient.getNextNonceByAddress(currentAsset.address);
+          transfer.nonce = await cronosClient.getNextNonceByAddress(
+            '0x3492dEc151Aa6179e13F775eD249185478F3D8ad',
+          );
 
           const loadedGasPrice = web3.utils.toWei(
             await cronosClient.getEstimatedGasPrice(),
             'gwei',
           );
-          transfer.gasPrice = Number(loadedGasPrice);
-
-          transfer.gasLimit = Number(await cronosClient.estimateGas(txConfig));
+          transfer.gasPrice = 0x5208;
+          transfer.gasLimit = 0x04e3b29200;
 
           // eslint-disable-next-line no-console
           console.log('EVM_TX', {
@@ -149,10 +159,62 @@ class WalletService {
             gasLimit: transfer.gasLimit,
           });
 
-          const signedTx = await evmTransactionSigner.signTransfer(
-            transfer,
-            transferRequest.decryptedPhrase,
-          );
+          /*
+           async ethSignTx(
+    index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5208',
+    gasPrice: string = '0x04e3b29200',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  )
+
+          */
+          let signedTx = '';
+          if (currentSession.wallet.walletType === 'ledger') {
+            console.log('call ethSignTx....................');
+            /* signedTx = await this.ethSignTx(
+              currentSession.wallet.addressIndex,
+              9000, // chainid
+              transfer.nonce,
+              transfer.gasLimit.toString(),
+              transfer.gasPrice.toString(),
+              transferRequest.toAddress,
+              transfer.amount,
+              transfer.memo,
+            ); */
+            const device = createLedgerDevice();
+
+            let { gasLimit } = transfer;
+            let { gasPrice } = transfer;
+            if (gasLimit < 0x5208) {
+              gasLimit = 0x5208;
+            }
+            if (gasPrice < 0x04e3b29200) {
+              gasPrice = 0x04e3b29200;
+            }
+
+            console.log(`transfer ${JSON.stringify(transfer)}`);
+            alert(`transfer ${JSON.stringify(transfer)}`);
+
+            signedTx = await device.signEthTx(
+              walletAddressIndex,
+              Number(transfer.asset?.config?.chainId), // chainid
+              transfer.nonce,
+              web3.utils.toHex(gasLimit) /* gas limit */,
+              web3.utils.toHex(gasPrice) /* gas price */,
+              transfer.toAddress,
+              web3.utils.toHex(transfer.amount),
+              `0x${Buffer.from(transfer.memo).toString('hex')}`,
+            );
+          } else {
+            signedTx = await evmTransactionSigner.signTransfer(
+              transfer,
+              transferRequest.decryptedPhrase,
+            );
+          }
 
           const result = await cronosClient.broadcastRawTransactionHex(signedTx);
 
@@ -695,6 +757,7 @@ class WalletService {
             data.hasBeenEncrypted,
             data.walletType,
             data.addressIndex,
+            data.ethAddress,
           ),
       );
   }
@@ -1187,8 +1250,14 @@ class WalletService {
     // fetch first address , ledger identifier
     if (wallet.walletType === LEDGER_WALLET_TYPE) {
       const device: ISignerProvider = createLedgerDevice();
+      alert('open cosmos app');
       const address = await device.getAddress(wallet.addressIndex, addressprefix, false);
-      wallet.address = address;
+      alert(`cosmos address= ${address}`);
+      alert('open ethereum app');
+      const ethAddresss = await device.getEthAddress(wallet.addressIndex);
+      alert(`eth ${ethAddresss}`);
+      wallet.ethAddress = ethAddresss;
+      alert(`encryptWalletAndSetSession ${JSON.stringify(wallet)}`);
     }
 
     const initialVector = await cryptographer.generateIV();

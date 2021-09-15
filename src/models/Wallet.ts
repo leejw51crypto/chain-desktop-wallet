@@ -12,7 +12,9 @@ export class Wallet {
   public readonly name: string;
 
   // Legacy field - Relevant only for single asset wallets created
-  public address: string;
+  public address: string; // cosmos address
+
+  public ethAddress: string; // eth Address
 
   public encryptedPhrase: string;
 
@@ -37,6 +39,7 @@ export class Wallet {
     hasBeenEncrypted: boolean = false,
     walletType: string,
     addressIndex: number,
+    ethAddress: string,
   ) {
     this.identifier = id;
     this.name = name;
@@ -46,6 +49,7 @@ export class Wallet {
     this.hasBeenEncrypted = hasBeenEncrypted;
     this.walletType = walletType;
     this.addressIndex = addressIndex;
+    this.ethAddress = ethAddress;
     // this.assets = [];
   }
 }

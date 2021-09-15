@@ -1,11 +1,14 @@
-import {Bytes} from "@crypto-org-chain/chain-jslib/lib/dist/utils/bytes/bytes";
+import { Bytes } from '@crypto-org-chain/chain-jslib/lib/dist/utils/bytes/bytes';
 
 const { ipcMain } = require('electron');
 import { LedgerSignerNative } from './LedgerSignerNative';
+import { LedgerEthSigner } from './LedgerEthSigner';
 export class IpcMain {
   provider: LedgerSignerNative;
+  ethProvider: LedgerEthSigner;
   constructor() {
     this.provider = new LedgerSignerNative();
+    this.ethProvider = new LedgerEthSigner();
   }
   setup() {
     ipcMain.on('asynchronous-message', (event: any, arg: any) => {
@@ -62,6 +65,118 @@ export class IpcMain {
         };
         console.error('signMessage error ' + e);
       }
+      event.returnValue = ret;
+    });
+    // arg: string
+    ipcMain.on('ethSignSendTx', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        console.log('received= ', JSON.stringify(arg));
+        /*
+    url: string = 'http://127.0.0.1:8545',
+    index: number = 0,
+    chainId: number = 9000,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+
+    value: string = '0x00',
+    data: string = '0x',
+        */
+
+        const txhash = await this.ethProvider.signAndSendTx(
+          arg.url,
+          arg.index,
+          arg.chainId,
+          arg.gasLimit,
+          arg.gasPrice,
+          arg.to,
+          arg.value,
+          arg.data,
+        );
+        ret = {
+          txhash,
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
+      }
+      event.returnValue = ret;
+    });
+
+    ipcMain.on('ethSignTx', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        console.log('received= ', JSON.stringify(arg));
+        /*
+  index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+        */
+        // await this.provider.closeTransport();
+        console.log(JSON.stringify(arg));
+        const signedtx = await this.ethProvider.signTx(
+          arg.index,
+          arg.chainId,
+          arg.nonce,
+          arg.gasLimit,
+          arg.gasPrice,
+
+          arg.to,
+          arg.value,
+          arg.data,
+        );
+        ret = {
+          signedtx,
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
+      }
+      event.returnValue = ret;
+    });
+    ipcMain.on('ethGetAddress', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        console.log('received= ', JSON.stringify(arg));
+        /*
+  index: number = 0,
+        */
+        // await this.provider.closeTransport();
+
+        const address = await this.ethProvider.getAddress(arg.index);
+        ret = {
+          address,
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
+      }
+      console.log(`address ${JSON.stringify(ret)}`);
       event.returnValue = ret;
     });
   }
