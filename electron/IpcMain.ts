@@ -2,10 +2,13 @@ import { Bytes } from '@crypto-org-chain/chain-jslib/lib/dist/utils/bytes/bytes'
 
 const { ipcMain } = require('electron');
 import { LedgerSignerNative } from './LedgerSignerNative';
+import { LedgerEthSigner } from './LedgerEthSigner';
 export class IpcMain {
   provider: LedgerSignerNative;
+  ethProvider: LedgerEthSigner;
   constructor() {
     this.provider = new LedgerSignerNative();
+    this.ethProvider = new LedgerEthSigner();
   }
   setup() {
     ipcMain.on('asynchronous-message', (event: any, arg: any) => {
@@ -68,6 +71,7 @@ export class IpcMain {
     ipcMain.on('testMessage', async (event: any, arg: any) => {
       let ret = {};
       try {
+        await this.ethProvider.test();
         ret = {
           feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
           success: true,
