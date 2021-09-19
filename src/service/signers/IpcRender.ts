@@ -52,4 +52,15 @@ export class IpcRender implements ISignerProvider {
 
     return Bytes.fromBuffer(Buffer.from(arg.signed));
   }
+
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line  class-methods-use-this
+  async hello(): Promise<void> {
+    const arg = electron.ipcRenderer.sendSync('testMessage', 'hello');
+    if (!arg.success) {
+      throw new Error(`test fail: ${arg.error}`);
+    }
+
+    alert(JSON.stringify(arg));
+  }
 }

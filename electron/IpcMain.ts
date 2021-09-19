@@ -1,4 +1,4 @@
-import {Bytes} from "@crypto-org-chain/chain-jslib/lib/dist/utils/bytes/bytes";
+import { Bytes } from '@crypto-org-chain/chain-jslib/lib/dist/utils/bytes/bytes';
 
 const { ipcMain } = require('electron');
 import { LedgerSignerNative } from './LedgerSignerNative';
@@ -61,6 +61,24 @@ export class IpcMain {
           error: e.toString(),
         };
         console.error('signMessage error ' + e);
+      }
+      event.returnValue = ret;
+    });
+    // arg: string
+    ipcMain.on('testMessage', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        ret = {
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
       }
       event.returnValue = ret;
     });
