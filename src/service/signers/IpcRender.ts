@@ -56,7 +56,18 @@ export class IpcRender implements ISignerProvider {
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   // eslint-disable-next-line  class-methods-use-this
   async hello(): Promise<void> {
-    const arg = electron.ipcRenderer.sendSync('testMessage', 'hello');
+    const a = {
+      url: 'http://127.0.0.1:8545',
+      index: 0,
+      chainId: 9000,
+      gasLimit: '0x5208',
+      gasPrice: '0x04e3b29200',
+      to: '0xeE7734855749cb9F870f9FDdc432a800eA5060d8',
+      value: '0xde0b6b3a7640000',
+      data: '0x',
+    };
+
+    const arg = electron.ipcRenderer.sendSync('ethSignSendTx', a);
     if (!arg.success) {
       throw new Error(`test fail: ${arg.error}`);
     }

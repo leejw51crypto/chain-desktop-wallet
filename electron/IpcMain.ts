@@ -68,11 +68,34 @@ export class IpcMain {
       event.returnValue = ret;
     });
     // arg: string
-    ipcMain.on('testMessage', async (event: any, arg: any) => {
+    ipcMain.on('ethSignSendTx', async (event: any, arg: any) => {
       let ret = {};
       try {
-        await this.ethProvider.test();
+        console.log('received= ', JSON.stringify(arg));
+        /*
+    url: string = 'http://127.0.0.1:8545',
+    index: number = 0,
+    chainId: number = 9000,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+
+    value: string = '0x00',
+    data: string = '0x',
+        */
+
+        const txhash = await this.ethProvider.signAndSendTx(
+          arg.url,
+          arg.index,
+          arg.chainId,
+          arg.gasLimit,
+          arg.gasPrice,
+          arg.to,
+          arg.value,
+          arg.data,
+        );
         ret = {
+          txhash,
           feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
           success: true,
           label: 'testMessage reply',

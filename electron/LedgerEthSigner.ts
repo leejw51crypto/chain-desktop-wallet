@@ -79,6 +79,7 @@ export class LedgerEthSigner {
     data: string = '0x',
   ): Promise<string> {
     try {
+      await this.createTransport();
       const path: string = `44'/60'/0'/0/${index}`;
       const signedTx = await this.doSignTx(
         path,
@@ -107,6 +108,7 @@ export class LedgerEthSigner {
     data: string = '0x',
   ): Promise<string> {
     try {
+      await this.createTransport();
       const path: string = `44'/60'/0'/0/${index}`;
       const web3 = new Web3(url);
       const from_addr = (await this.app.getAddress(path)).address;
