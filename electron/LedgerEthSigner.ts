@@ -27,6 +27,107 @@ export class LedgerEthSigner {
     }
   }
 
+  async getAddress(index: number = 0): Promise<string> {
+    try {
+      const path: string = `44'/60'/0'/0/${index}`;
+      await this.createTransport();
+      const retAddress = await this.app.getAddress().address;
+      return retAddress;
+    } finally {
+      await this.closeTransport();
+    }
+  }
+
+  async doSignTx(
+    path: string = "44'/60'/0'/0/0",
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  ): Promise<string> {
+    const baseTx: ethers.utils.UnsignedTransaction = {
+      chainId,
+      data,
+      gasLimit,
+      gasPrice,
+      nonce,
+      to,
+      value,
+    };
+
+    const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2);
+    const sig = await this.app.signTransaction(path, unsignedTx);
+    const ret = ethers.utils.serializeTransaction(baseTx, {
+      v: ethers.BigNumber.from('0x' + sig.v).toNumber(),
+      r: '0x' + sig.r,
+      s: '0x' + sig.s,
+    });
+    return ret;
+  }
+
+  async signTx(
+    index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  ): Promise<string> {
+    try {
+      const path: string = `44'/60'/0'/0/${index}`;
+      const signedTx = await this.doSignTx(
+        path,
+        chainId,
+        nonce,
+        gasLimit,
+        gasPrice,
+        to,
+        value,
+        data,
+      );
+      return signedTx;
+    } finally {
+      await this.closeTransport();
+    }
+  }
+
+  async signAndSendTx(
+    url: string = 'http://127.0.0.1:8545',
+    index: number = 0,
+    chainId: number = 9000,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  ): Promise<string> {
+    try {
+      const path: string = `44'/60'/0'/0/${index}`;
+      const web3 = new Web3(url);
+      const from_addr = (await this.app.getAddress(path)).address;
+      const nonce = await web3.eth.getTransactionCount(from_addr);
+      const signedTx = await this.doSignTx(
+        path,
+        chainId,
+        nonce,
+        gasLimit,
+        gasPrice,
+        to,
+        value,
+        data,
+      );
+      const txHash = (await web3.eth.sendSignedTransaction(signedTx)).transactionHash;
+      return txHash;
+    } finally {
+      await this.closeTransport();
+    }
+  }
+
   async test() {
     const transport = await TransportHID.open(''); // take first device
     const eth = new Eth(transport);

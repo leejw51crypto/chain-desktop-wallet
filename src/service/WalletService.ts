@@ -101,6 +101,7 @@ class WalletService {
       case UserAssetType.EVM:
         try {
           if (currentAsset?.config?.isLedgerSupportDisabled) {
+            alert('call evm');
             throw TypeError(
               `${LEDGER_WALLET_TYPE} not supported yet for ${transferRequest.walletType} assets`,
             );
