@@ -217,8 +217,8 @@ class WalletService {
           let signedTx = '';
           if (currentAsset?.config?.isLedgerSupportDisabled) {
             signedTx = await this.ethSignTx(
-              0,
-              9000,
+              currentSession.wallet.addressIndex,
+              9000, // chainid
               transfer.nonce,
               transfer.gasLimit.toString(),
               transfer.gasPrice.toString(),
