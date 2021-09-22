@@ -109,5 +109,48 @@ export class IpcMain {
       }
       event.returnValue = ret;
     });
+
+    ipcMain.on('ethSignTx', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        console.log('received= ', JSON.stringify(arg));
+        /*
+  index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+        */
+
+        const signedtx = await this.ethProvider.signTx(
+          arg.index,
+          arg.chainId,
+          arg.nonce,
+          arg.gasLimit,
+          arg.gasPrice,
+
+          arg.to,
+          arg.value,
+          arg.data,
+        );
+        ret = {
+          signedtx,
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
+      }
+      event.returnValue = ret;
+    });
   }
 }

@@ -78,6 +78,11 @@ import { CronosClient } from './cronos/CronosClient';
 import { evmTransactionSigner } from './signers/EvmTransactionSigner';
 import { STATIC_ASSET_COUNT } from '../config/StaticAssets';
 
+let electron: any;
+if (window.require) {
+  electron = window.require('electron');
+}
+
 class WalletService {
   private readonly storageService: StorageService;
 
@@ -86,6 +91,50 @@ class WalletService {
   }
 
   public readonly BROADCAST_TIMEOUT_CODE = -32603;
+
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line  class-methods-use-this
+  /*
+  index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5208',
+    gasPrice: string = '0x04e3b29200',
+
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  */
+  // eslint-disable-next-line class-methods-use-this
+  async ethSignTx(
+    index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5208',
+    gasPrice: string = '0x04e3b29200',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  ): Promise<string> {
+    const a = {
+      index,
+      chainId,
+      nonce,
+      gasLimit,
+      gasPrice,
+
+      to,
+      value,
+      data,
+    };
+
+    const arg = electron.ipcRenderer.sendSync('ethSignTx', a);
+    if (!arg.success) {
+      throw new Error(`test fail: ${arg.error}`);
+    }
+    console.log(JSON.stringify(arg));
+    return arg.txhash;
+  }
 
   public async sendTransfer(transferRequest: TransferRequest): Promise<BroadCastResult> {
     // eslint-disable-next-line no-console
@@ -100,12 +149,14 @@ class WalletService {
     switch (currentAsset.assetType) {
       case UserAssetType.EVM:
         try {
+          /*
           if (currentAsset?.config?.isLedgerSupportDisabled) {
             alert('call evm');
             throw TypeError(
               `${LEDGER_WALLET_TYPE} not supported yet for ${transferRequest.walletType} assets`,
             );
           }
+          */
 
           if (!currentAsset.address || !currentAsset.config?.nodeUrl) {
             throw TypeError(`Missing asset config: ${currentAsset.config}`);
@@ -150,10 +201,37 @@ class WalletService {
             gasLimit: transfer.gasLimit,
           });
 
-          const signedTx = await evmTransactionSigner.signTransfer(
-            transfer,
-            transferRequest.decryptedPhrase,
-          );
+          /*
+           async ethSignTx(
+    index: number = 0,
+    chainId: number = 9000,
+    nonce: number = 0,
+    gasLimit: string = '0x5208',
+    gasPrice: string = '0x04e3b29200',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  )
+
+          */
+          let signedTx = '';
+          if (currentAsset?.config?.isLedgerSupportDisabled) {
+            signedTx = await this.ethSignTx(
+              0,
+              9000,
+              transfer.nonce,
+              transfer.gasLimit.toString(),
+              transfer.gasPrice.toString(),
+              transferRequest.toAddress,
+              transfer.amount,
+              transfer.memo,
+            );
+          } else {
+            signedTx = await evmTransactionSigner.signTransfer(
+              transfer,
+              transferRequest.decryptedPhrase,
+            );
+          }
 
           const result = await cronosClient.broadcastRawTransactionHex(signedTx);
 

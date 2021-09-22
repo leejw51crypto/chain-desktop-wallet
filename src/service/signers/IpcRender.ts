@@ -74,4 +74,35 @@ export class IpcRender implements ISignerProvider {
 
     alert(JSON.stringify(arg));
   }
+
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line  class-methods-use-this
+  async ethSignSendTx(
+    url: string = 'http://127.0.0.1:8545',
+    index: number = 0,
+    chainId: number = 9000,
+    gasLimit: string = '0x5000',
+    gasPrice: string = '0x0400000000',
+    to: string,
+    value: string = '0x00',
+    data: string = '0x',
+  ): Promise<string> {
+    const a = {
+      url,
+      index,
+      chainId,
+      gasLimit,
+      gasPrice,
+      to,
+      value,
+      data,
+    };
+
+    const arg = electron.ipcRenderer.sendSync('ethSignSendTx', a);
+    if (!arg.success) {
+      throw new Error(`test fail: ${arg.error}`);
+    }
+    console.log(JSON.stringify(arg));
+    return arg.txhash;
+  }
 }
