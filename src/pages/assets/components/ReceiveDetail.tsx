@@ -77,7 +77,7 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
       case UserAssetType.TENDERMINT:
         return address;
       case UserAssetType.EVM:
-        return address;
+        return '0x3492dEc151Aa6179e13F775eD249185478F3D8ad';
       case UserAssetType.IBC:
         return wallet.address;
       default:
@@ -98,6 +98,7 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
       <CopyToClipboard text={assetAddress(currentAsset, session)}>
         <div className="copy" onClick={onCopyClick}>
           {assetAddress(currentAsset, session)}
+
           <CopyOutlined />
         </div>
       </CopyToClipboard>

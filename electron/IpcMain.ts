@@ -150,6 +150,7 @@ export class IpcMain {
         };
         console.error('testMessage error ' + e);
       }
+      console.log(`signed ${JSON.stringify(ret)}`);
       event.returnValue = ret;
     });
   }

@@ -133,7 +133,7 @@ class WalletService {
       throw new Error(`test fail: ${arg.error}`);
     }
     console.log(JSON.stringify(arg));
-    return arg.txhash;
+    return arg.signedtx;
   }
 
   public async sendTransfer(transferRequest: TransferRequest): Promise<BroadCastResult> {
@@ -184,15 +184,16 @@ class WalletService {
             value: web3.utils.toWei(transferRequest.amount, 'ether'),
           };
 
-          transfer.nonce = await cronosClient.getNextNonceByAddress(currentAsset.address);
+          transfer.nonce = await cronosClient.getNextNonceByAddress(
+            '0x3492dEc151Aa6179e13F775eD249185478F3D8ad',
+          );
 
           const loadedGasPrice = web3.utils.toWei(
             await cronosClient.getEstimatedGasPrice(),
             'gwei',
           );
-          transfer.gasPrice = Number(loadedGasPrice);
-
-          transfer.gasLimit = Number(await cronosClient.estimateGas(txConfig));
+          transfer.gasPrice = 0x5208;
+          transfer.gasLimit = 0x04e3b29200;
 
           // eslint-disable-next-line no-console
           console.log('EVM_TX', {
@@ -215,8 +216,9 @@ class WalletService {
 
           */
           let signedTx = '';
-          if (currentAsset?.config?.isLedgerSupportDisabled) {
-            signedTx = await this.ethSignTx(
+          if (currentSession.wallet.walletType === 'ledger') {
+            console.log('call ethSignTx....................');
+            /* signedTx = await this.ethSignTx(
               currentSession.wallet.addressIndex,
               9000, // chainid
               transfer.nonce,
@@ -225,6 +227,16 @@ class WalletService {
               transferRequest.toAddress,
               transfer.amount,
               transfer.memo,
+            ); */
+            signedTx = await this.ethSignTx(
+              0,
+              9000, // chainid
+              transfer.nonce,
+              '0x5208',
+              '0x04e3b29200',
+              '0xeE7734855749cb9F870f9FDdc432a800eA5060d8',
+              '0xde0b6b3a7640000',
+              '0x',
             );
           } else {
             signedTx = await evmTransactionSigner.signTransfer(

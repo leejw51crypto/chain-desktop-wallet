@@ -61,12 +61,12 @@ class EVMClient implements IEvmRpc {
     return mayBeTxReceipt;
   }
 
-    // Fees
+  // Fees
   async getEstimatedGasPrice(): Promise<string> {
     const estimatedGasPrice = await this.web3.eth.getGasPrice();
     return estimatedGasPrice;
   }
-  
+
   async estimateGas(txConfig: TransactionConfig): Promise<number> {
     const estimatedGas = await this.web3.eth.estimateGas(txConfig);
     return estimatedGas;
@@ -101,7 +101,6 @@ class EVMClient implements IEvmRpc {
     }
 
     const broadcastTx = await this.web3.eth.sendSignedTransaction(signedTxHex);
-
     if (broadcastTx.status) {
       return broadcastTx.transactionHash;
     }

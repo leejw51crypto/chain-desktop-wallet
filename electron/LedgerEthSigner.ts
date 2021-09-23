@@ -124,6 +124,7 @@ export class LedgerEthSigner {
         data,
       );
       const txHash = (await web3.eth.sendSignedTransaction(signedTx)).transactionHash;
+
       return txHash;
     } finally {
       await this.closeTransport();
