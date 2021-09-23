@@ -6,7 +6,7 @@ module.exports = {
   },
   plugins: ['react-hooks'],
   rules: {
-    '@typescript-eslint/object-curly-spacing':"off",
+    '@typescript-eslint/object-curly-spacing': 'off',
     'jsx-a11y/accessible-emoji': 'off',
     'no-new-wrappers': 'off',
     'no-extra-boolean-cast': 'off',
@@ -18,13 +18,15 @@ module.exports = {
     'max-classes-per-file': ['error', 3],
     '@typescript-eslint/consistent-type-imports': 'off',
     '@typescript-eslint/method-signature-style': 'off',
+    '@typescript-eslint/method-signature-style': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/type-annotation-spacing': 'off',
     '@typescript-eslint/array-type': 'off',
     '@typescript-eslint/return-await': 'off',
     'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*.spec.ts'] }],
     'react-hooks/rules-of-hooks': 'error',
-    "import/no-unresolved": "off",
+    'import/no-unresolved': 'off',
     'react-hooks/exhaustive-deps': [
       'off',
       {

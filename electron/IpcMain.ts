@@ -125,6 +125,7 @@ export class IpcMain {
     value: string = '0x00',
     data: string = '0x',
         */
+        // await this.provider.closeTransport();
 
         const signedtx = await this.ethProvider.signTx(
           arg.index,
@@ -151,6 +152,32 @@ export class IpcMain {
         console.error('testMessage error ' + e);
       }
       console.log(`signed ${JSON.stringify(ret)}`);
+      event.returnValue = ret;
+    });
+    ipcMain.on('ethGetAddress', async (event: any, arg: any) => {
+      let ret = {};
+      try {
+        console.log('received= ', JSON.stringify(arg));
+        /*
+  index: number = 0,
+        */
+        // await this.provider.closeTransport();
+
+        const address = await this.ethProvider.getAddress(arg.index);
+        ret = {
+          address,
+          feedback: `${arg} world~~~~~~~~~~~~~~~~~~~~~~`,
+          success: true,
+          label: 'testMessage reply',
+        };
+      } catch (e) {
+        ret = {
+          success: false,
+          error: e.toString(),
+        };
+        console.error('testMessage error ' + e);
+      }
+      console.log(`address ${JSON.stringify(ret)}`);
       event.returnValue = ret;
     });
   }

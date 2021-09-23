@@ -29,10 +29,14 @@ export class LedgerEthSigner {
 
   async getAddress(index: number = 0): Promise<string> {
     try {
+      console.log(`1   index=${index}`);
       const path: string = `44'/60'/0'/0/${index}`;
       await this.createTransport();
-      const retAddress = await this.app.getAddress().address;
-      return retAddress;
+      console.log(`2 path ${path}`);
+      const retAddress = await this.app.getAddress(path);
+      console.log(`3 ${JSON.stringify(retAddress)}`);
+      console.log(JSON.stringify(retAddress));
+      return retAddress.address;
     } finally {
       await this.closeTransport();
     }

@@ -20,12 +20,34 @@ interface ReceiveDetailProps {
 const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
   const { currentAsset, session } = props;
   const [isLedger, setIsLedger] = useState(false);
+  const [ledgerAddress, setLedgerAddress] = useState('');
 
   const [t] = useTranslation();
+
+  const isEVM = currentAsset?.assetType === UserAssetType.EVM;
+
+  const assetAddress = (asset, _session) => {
+    const { assetType, address } = asset;
+    // For IBC assets
+    const { wallet } = _session;
+
+    switch (assetType) {
+      case UserAssetType.TENDERMINT:
+        return address;
+      case UserAssetType.EVM:
+        // return '0x3492dEc151Aa6179e13F775eD249185478F3D8ad';
+        return address;
+      case UserAssetType.IBC:
+        return wallet.address;
+      default:
+        return wallet.address;
+    }
+  };
 
   useEffect(() => {
     const { walletType } = session.wallet;
     setIsLedger(LEDGER_WALLET_TYPE === walletType);
+    // setLedgerAddress(assetAddress(currentAsset, session));
   });
 
   const clickCheckLedger = async () => {
@@ -34,7 +56,14 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
       const addressprefix = config.network.addressPrefix;
       if (LEDGER_WALLET_TYPE === walletType) {
         const device = createLedgerDevice();
-        await device.getAddress(addressIndex, addressprefix, true);
+        let ret = '';
+        if (isEVM) {
+          ret = await device.getEthAddress(addressIndex);
+        } else {
+          ret = await device.getAddress(addressIndex, addressprefix, false);
+        }
+
+        setLedgerAddress(ret);
       }
     } catch (e) {
       notification.error({
@@ -68,23 +97,6 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
   //   );
   // };
 
-  const assetAddress = (asset, _session) => {
-    const { assetType, address } = asset;
-    // For IBC assets
-    const { wallet } = _session;
-
-    switch (assetType) {
-      case UserAssetType.TENDERMINT:
-        return address;
-      case UserAssetType.EVM:
-        return '0x3492dEc151Aa6179e13F775eD249185478F3D8ad';
-      case UserAssetType.IBC:
-        return wallet.address;
-      default:
-        return wallet.address;
-    }
-  };
-
   return (
     <div className="receive-detail">
       {/* <div className="title">
@@ -92,13 +104,12 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
         {currentAsset?.name} ({currentAsset?.symbol})
       </div> */}
       <div className="address">
-        <QRCode value={assetAddress(currentAsset, session)} size={180} />
+        <QRCode value={ledgerAddress} size={180} />
         <div className="name">{session.wallet.name}</div>
       </div>
-      <CopyToClipboard text={assetAddress(currentAsset, session)}>
+      <CopyToClipboard text={ledgerAddress}>
         <div className="copy" onClick={onCopyClick}>
-          {assetAddress(currentAsset, session)}
-
+          ~~ {ledgerAddress} ~~
           <CopyOutlined />
         </div>
       </CopyToClipboard>

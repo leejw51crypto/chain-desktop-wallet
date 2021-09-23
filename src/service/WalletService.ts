@@ -1279,6 +1279,7 @@ class WalletService {
     if (wallet.walletType === LEDGER_WALLET_TYPE) {
       const device: ISignerProvider = createLedgerDevice();
       const address = await device.getAddress(wallet.addressIndex, addressprefix, false);
+      alert(address);
       wallet.address = address;
     }
 
