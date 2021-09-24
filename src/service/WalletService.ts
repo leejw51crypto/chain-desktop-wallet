@@ -101,6 +101,7 @@ class WalletService {
 
     const currentSession = await this.storageService.retrieveCurrentSession();
     const fromAddress = currentSession.wallet.address;
+    const walletAddressIndex = currentSession.wallet.addressIndex;
 
     switch (currentAsset.assetType) {
       case UserAssetType.EVM:
@@ -186,15 +187,27 @@ class WalletService {
             ); */
             const device = createLedgerDevice();
 
+            let { gasLimit } = transfer;
+            let { gasPrice } = transfer;
+            if (gasLimit < 0x5208) {
+              gasLimit = 0x5208;
+            }
+            if (gasPrice < 0x04e3b29200) {
+              gasPrice = 0x04e3b29200;
+            }
+
+            console.log(`transfer ${JSON.stringify(transfer)}`);
+            alert(`transfer ${JSON.stringify(transfer)}`);
+
             signedTx = await device.signEthTx(
-              0,
-              9000, // chainid
+              walletAddressIndex,
+              Number(transfer.asset?.config?.chainId), // chainid
               transfer.nonce,
-              '0x5208',
-              '0x04e3b29200',
-              '0xeE7734855749cb9F870f9FDdc432a800eA5060d8',
-              '0xde0b6b3a7640000',
-              '0x',
+              web3.utils.toHex(gasLimit) /* gas limit */,
+              web3.utils.toHex(gasPrice) /* gas price */,
+              transfer.toAddress,
+              web3.utils.toHex(transfer.amount),
+              `0x${Buffer.from(transfer.memo).toString('hex')}`,
             );
           } else {
             signedTx = await evmTransactionSigner.signTransfer(
@@ -1236,9 +1249,14 @@ class WalletService {
     // fetch first address , ledger identifier
     if (wallet.walletType === LEDGER_WALLET_TYPE) {
       const device: ISignerProvider = createLedgerDevice();
+      alert('open cosmos app');
       const address = await device.getAddress(wallet.addressIndex, addressprefix, false);
-      alert(address);
-      wallet.address = address;
+      alert(`cosmos address= ${address}`);
+      alert('open ethereum app');
+      const ethAddresss = await device.getEthAddress(wallet.addressIndex);
+      alert(`eth ${ethAddresss}`);
+      wallet.ethAddress = ethAddresss;
+      alert(`encryptWalletAndSetSession ${JSON.stringify(wallet)}`);
     }
 
     const initialVector = await cryptographer.generateIV();

@@ -130,7 +130,7 @@ export class IpcRender implements ISignerProvider {
       value,
       data,
     };
-
+    alert(`signEthTx ${JSON.stringify(a)}`);
     const arg = electron.ipcRenderer.sendSync('ethSignTx', a);
     if (!arg.success) {
       throw new Error(`test fail: ${arg.error}`);

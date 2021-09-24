@@ -20,9 +20,11 @@ export function getBaseScaledAmount(amount: string, asset: UserAsset): string {
 /// E.G : From 5000 BASETRCRO to 0.00005 TCRO
 export function getNormalScaleAmount(amount: string, asset: UserAsset): string {
   const exp = Big(10).pow(asset.decimals);
-  return Big(amount)
+  const ret = Big(amount)
     .div(exp)
     .toFixed();
+  console.log(`getNormalScaleAmount ${amount}  ${ret}`);
+  return ret;
 }
 
 /// Get normal scale amount but fixed to 4 decimals
@@ -79,12 +81,17 @@ export function adjustedTransactionAmount(
   walletAsset: UserAsset,
   fee: string,
 ): string {
+  alert(`adjustedTransactionAmount ${formAmount}  fee ${fee}`);
   // Handle case for existing users
   const currentFee = fee ?? FIXED_DEFAULT_FEE;
-  const availableBalance = Big(scaledBalance(walletAsset));
+  alert(`wallet asset ${JSON.stringify(walletAsset)}`);
+  const availableBalance = Big('10000000000000000000000000');
+  alert(`availableBalance ${availableBalance}`);
   const fixedFee = getNormalScaleAmount(currentFee, walletAsset);
+  alert(`currentfee ${currentFee} availableBalance ${availableBalance} fixedFee ${fixedFee}`);
 
   const amountAndFee = Big(formAmount).add(fixedFee);
+  alert(`amountAndFee ${amountAndFee}  availableBalance ${availableBalance}`);
   if (amountAndFee.gt(availableBalance)) {
     return availableBalance.minus(fixedFee).toFixed();
   }

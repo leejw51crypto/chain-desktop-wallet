@@ -20,11 +20,14 @@ interface ReceiveDetailProps {
 const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
   const { currentAsset, session } = props;
   const [isLedger, setIsLedger] = useState(false);
-  const [ledgerAddress, setLedgerAddress] = useState('');
 
   const [t] = useTranslation();
 
   const isEVM = currentAsset?.assetType === UserAssetType.EVM;
+  const initialLedgerAddress = () => {
+    return session.wallet.ethAddress;
+  };
+  const [ledgerAddress, setLedgerAddress] = useState(initialLedgerAddress);
 
   const assetAddress = (asset, _session) => {
     const { assetType, address } = asset;
