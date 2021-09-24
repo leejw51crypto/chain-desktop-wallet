@@ -92,50 +92,6 @@ class WalletService {
 
   public readonly BROADCAST_TIMEOUT_CODE = -32603;
 
-  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  // eslint-disable-next-line  class-methods-use-this
-  /*
-  index: number = 0,
-    chainId: number = 9000,
-    nonce: number = 0,
-    gasLimit: string = '0x5208',
-    gasPrice: string = '0x04e3b29200',
-
-    to: string,
-    value: string = '0x00',
-    data: string = '0x',
-  */
-  // eslint-disable-next-line class-methods-use-this
-  async ethSignTx(
-    index: number = 0,
-    chainId: number = 9000,
-    nonce: number = 0,
-    gasLimit: string = '0x5208',
-    gasPrice: string = '0x04e3b29200',
-    to: string,
-    value: string = '0x00',
-    data: string = '0x',
-  ): Promise<string> {
-    const a = {
-      index,
-      chainId,
-      nonce,
-      gasLimit,
-      gasPrice,
-
-      to,
-      value,
-      data,
-    };
-
-    const arg = electron.ipcRenderer.sendSync('ethSignTx', a);
-    if (!arg.success) {
-      throw new Error(`test fail: ${arg.error}`);
-    }
-    console.log(JSON.stringify(arg));
-    return arg.signedtx;
-  }
-
   public async sendTransfer(transferRequest: TransferRequest): Promise<BroadCastResult> {
     // eslint-disable-next-line no-console
     console.log('TRANSFER_ASSET', transferRequest.asset);
@@ -228,7 +184,9 @@ class WalletService {
               transfer.amount,
               transfer.memo,
             ); */
-            signedTx = await this.ethSignTx(
+            const device = createLedgerDevice();
+
+            signedTx = await device.signEthTx(
               0,
               9000, // chainid
               transfer.nonce,

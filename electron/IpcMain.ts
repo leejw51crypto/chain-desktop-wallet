@@ -126,7 +126,7 @@ export class IpcMain {
     data: string = '0x',
         */
         // await this.provider.closeTransport();
-
+        console.log(JSON.stringify(arg));
         const signedtx = await this.ethProvider.signTx(
           arg.index,
           arg.chainId,
@@ -151,7 +151,6 @@ export class IpcMain {
         };
         console.error('testMessage error ' + e);
       }
-      console.log(`signed ${JSON.stringify(ret)}`);
       event.returnValue = ret;
     });
     ipcMain.on('ethGetAddress', async (event: any, arg: any) => {

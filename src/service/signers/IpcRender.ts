@@ -135,7 +135,6 @@ export class IpcRender implements ISignerProvider {
     if (!arg.success) {
       throw new Error(`test fail: ${arg.error}`);
     }
-    console.log(JSON.stringify(arg));
     return arg.signedtx;
   }
 

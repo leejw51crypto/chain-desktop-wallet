@@ -41,7 +41,7 @@ export class LedgerWalletSignerProviderNative implements ISignerProvider {
     value: string,
     data: string,
   ): Promise<string> {
-    const signature = await this.ipcRender.signEthTx(
+    const signedtx = await this.ipcRender.signEthTx(
       index,
       chainId,
       nonce,
@@ -51,7 +51,7 @@ export class LedgerWalletSignerProviderNative implements ISignerProvider {
       value,
       data,
     );
-    return signature;
+    return signedtx;
   }
 
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars

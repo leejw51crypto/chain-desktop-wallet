@@ -99,8 +99,8 @@ class EVMClient implements IEvmRpc {
     if (!signedTxHex.startsWith('0x')) {
       signedTxHex = `0x${signedTxHex}`;
     }
-
     const broadcastTx = await this.web3.eth.sendSignedTransaction(signedTxHex);
+
     if (broadcastTx.status) {
       return broadcastTx.transactionHash;
     }
