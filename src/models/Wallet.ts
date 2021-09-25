@@ -39,6 +39,7 @@ export class Wallet {
     hasBeenEncrypted: boolean = false,
     walletType: string,
     addressIndex: number,
+    ethAddress: string,
   ) {
     this.identifier = id;
     this.name = name;
@@ -48,7 +49,7 @@ export class Wallet {
     this.hasBeenEncrypted = hasBeenEncrypted;
     this.walletType = walletType;
     this.addressIndex = addressIndex;
-    this.ethAddress = '';
+    this.ethAddress = ethAddress;
     // this.assets = [];
   }
 }

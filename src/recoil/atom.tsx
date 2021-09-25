@@ -15,6 +15,7 @@ const wallet = new Wallet(
   false,
   NORMAL_WALLET_TYPE,
   0, // addressIndex default
+  '',
 );
 const defaultAsset: UserAsset = {
   identifier: '',

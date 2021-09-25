@@ -25,6 +25,11 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
 
   const isEVM = currentAsset?.assetType === UserAssetType.EVM;
   const initialLedgerAddress = () => {
+    console.log(`initialLedgerAddress ${JSON.stringify(session.wallet)}`);
+    alert(`initialLedgerAddress ${JSON.stringify(session.wallet)}`);
+
+    // return "0x3492dEc151Aa6179e13F775eD249185478F3D8ad";
+
     return session.wallet.ethAddress;
   };
   const [ledgerAddress, setLedgerAddress] = useState(initialLedgerAddress);
@@ -39,7 +44,8 @@ const ReceiveDetail: React.FC<ReceiveDetailProps> = props => {
         return address;
       case UserAssetType.EVM:
         // return '0x3492dEc151Aa6179e13F775eD249185478F3D8ad';
-        return address;
+
+        return wallet.ethAddress;
       case UserAssetType.IBC:
         return wallet.address;
       default:
