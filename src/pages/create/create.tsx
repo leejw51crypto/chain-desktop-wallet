@@ -22,6 +22,7 @@ import { AnalyticsService } from '../../service/analytics/AnalyticsService';
 import LedgerModalPopup from '../../components/LedgerModalPopup/LedgerModalPopup';
 import SuccessCheckmark from '../../components/SuccessCheckmark/SuccessCheckmark';
 import IconLedger from '../../svg/IconLedger';
+import { UserAssetType } from '../../models/UserAsset';
 import {
   createLedgerDevice,
   detectConditionsError,
@@ -381,6 +382,12 @@ const FormCreate: React.FC<FormCreateProps> = props => {
 
     try {
       const createdWallet = new WalletCreator(createOptions).create();
+
+      const evmAsset = createdWallet.assets.filter(
+        asset => asset.assetType === UserAssetType.EVM,
+      )[0];
+      evmAsset.address = 'this is evm address';
+
       await walletService.saveAssets(createdWallet.assets);
 
       setWalletTempBackupSeed(createdWallet.wallet);
