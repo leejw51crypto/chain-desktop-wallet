@@ -23,6 +23,7 @@ import LedgerModalPopup from '../../components/LedgerModalPopup/LedgerModalPopup
 import SuccessCheckmark from '../../components/SuccessCheckmark/SuccessCheckmark';
 import IconLedger from '../../svg/IconLedger';
 import { UserAssetType } from '../../models/UserAsset';
+import { ISignerProvider } from '../../service/signers/SignerProvider';
 import {
   createLedgerDevice,
   detectConditionsError,
@@ -382,11 +383,22 @@ const FormCreate: React.FC<FormCreateProps> = props => {
 
     try {
       const createdWallet = new WalletCreator(createOptions).create();
-
-      const evmAsset = createdWallet.assets.filter(
-        asset => asset.assetType === UserAssetType.EVM,
-      )[0];
-      evmAsset.address = 'this is evm address';
+      const targetWallet = createdWallet.wallet;
+      if (targetWallet.walletType === LEDGER_WALLET_TYPE) {
+        const device: ISignerProvider = createLedgerDevice();
+        // alert('open cosmos app');
+        // const address = await device.getAddress(wallet.addressIndex, addressprefix, false);
+        // alert(`cosmos address= ${address}`);
+        alert('createwallet open ethereum app');
+        const ethAddresss = await device.getEthAddress(targetWallet.addressIndex);
+        alert(`createwallet eth ${ethAddresss}`);
+        targetWallet.ethAddress = ethAddresss;
+        alert(`createwallet encryptWalletAndSetSession ${JSON.stringify(targetWallet)}`);
+        const evmAsset = createdWallet.assets.filter(
+          asset => asset.assetType === UserAssetType.EVM,
+        )[0];
+        evmAsset.address = ethAddresss;
+      }
 
       await walletService.saveAssets(createdWallet.assets);
 
