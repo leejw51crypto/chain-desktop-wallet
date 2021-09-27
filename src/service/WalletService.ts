@@ -119,6 +119,7 @@ class WalletService {
             throw TypeError(`Missing asset config: ${currentAsset.config}`);
           }
 
+          alert(`cronosClient ${currentAsset.config?.nodeUrl} ${currentAsset.config?.indexingUrl}`);
           const cronosClient = new CronosClient(
             currentAsset.config?.nodeUrl,
             currentAsset.config?.indexingUrl,
@@ -133,6 +134,7 @@ class WalletService {
             accountSequence: 0,
             asset: currentAsset,
           };
+          alert(`three  currentAsset.address ${currentAsset.address}`);
 
           const web3 = new Web3('');
           const txConfig: TransactionConfig = {
@@ -141,10 +143,12 @@ class WalletService {
             value: web3.utils.toWei(transferRequest.amount, 'ether'),
           };
 
-          transfer.nonce = await cronosClient.getNextNonceByAddress(
-            '0x3492dEc151Aa6179e13F775eD249185478F3D8ad',
-          );
+          let f: string = '';
+          if (txConfig.from) f = txConfig.from.toString();
+          alert(`txconfig ${JSON.stringify(txConfig)}`);
+          transfer.nonce = await cronosClient.getNextNonceByAddress(f);
 
+          alert(`four  nonce ${transfer.nonce}`);
           const loadedGasPrice = web3.utils.toWei(
             await cronosClient.getEstimatedGasPrice(),
             'gwei',
@@ -215,7 +219,6 @@ class WalletService {
               transferRequest.decryptedPhrase,
             );
           }
-
           const result = await cronosClient.broadcastRawTransactionHex(signedTx);
 
           // eslint-disable-next-line no-console
@@ -1248,15 +1251,9 @@ class WalletService {
     const addressprefix = wallet.config.network.addressPrefix;
 
     // fetch first address , ledger identifier
+
     if (wallet.walletType === LEDGER_WALLET_TYPE) {
-      const device: ISignerProvider = createLedgerDevice();
-      alert('open cosmos app');
-      const address = await device.getAddress(wallet.addressIndex, addressprefix, false);
-      alert(`cosmos address= ${address}`);
-      alert('open ethereum app');
-      const ethAddresss = await device.getEthAddress(wallet.addressIndex);
-      alert(`eth ${ethAddresss}`);
-      wallet.ethAddress = ethAddresss;
+      alert(`encryptWalletAndSetSession address ${wallet.address}  eth ${wallet.ethAddress}`);
       alert(`encryptWalletAndSetSession ${JSON.stringify(wallet)}`);
     }
 
