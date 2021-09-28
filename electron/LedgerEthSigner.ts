@@ -4,6 +4,7 @@ import { ethers, UnsignedTransaction } from 'ethers';
 import Web3 from 'web3';
 import { Transaction } from 'ethereumjs-tx';
 import Common from 'ethereumjs-common';
+
 export class LedgerEthSigner {
   public app: any;
   public transport: TransportHID | null;
@@ -42,6 +43,29 @@ export class LedgerEthSigner {
     }
   }
 
+  public static padZero(original_array: Uint8Array, wanted_length: number) {
+    const new_array = new Uint8Array(wanted_length);
+    for (let i = wanted_length - 1; i >= 0; i--) {
+      const j = wanted_length - 1 - i;
+      const new_i = original_array.length - 1 - j;
+      if (new_i >= 0 && new_i < original_array.length) {
+        new_array[i] = original_array[new_i];
+      } else {
+        new_array[i] = 0;
+      }
+    }
+
+    return new_array;
+  }
+
+  // src: without 0x, wanted_length: in bytes
+  public static padZeroString(src: string, wanted_length: number): string {
+    const a1 = Buffer.from(src, 'hex');
+    const a2 = LedgerEthSigner.padZero(a1, wanted_length);
+    const a3 = Buffer.from(a2).toString('hex');
+    return a3;
+  }
+
   async doSignTx(
     path: string = "44'/60'/0'/0/0",
     chainId: number = 9000,
@@ -52,6 +76,7 @@ export class LedgerEthSigner {
     value: string = '0x00',
     data: string = '0x',
   ): Promise<string> {
+    const web3 = new Web3('');
     const baseTx: ethers.utils.UnsignedTransaction = {
       chainId,
       data,
@@ -64,11 +89,17 @@ export class LedgerEthSigner {
 
     const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2);
     const sig = await this.app.signTransaction(path, unsignedTx);
+    // to prevent possible padding issue
+    const sigR = LedgerEthSigner.padZeroString(sig.r, 32);
+    const sigS = LedgerEthSigner.padZeroString(sig.s, 32);
+
     const ret = ethers.utils.serializeTransaction(baseTx, {
       v: ethers.BigNumber.from('0x' + sig.v).toNumber(),
-      r: '0x' + sig.r,
-      s: '0x' + sig.s,
+      r: '0x' + sigR,
+      s: '0x' + sigS,
     });
+
+    console.log(`length: v ${sig.v}   r ${sig.r.length}    s ${sig.s.length}`);
     return ret;
   }
 
