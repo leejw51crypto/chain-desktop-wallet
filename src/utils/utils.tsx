@@ -106,3 +106,29 @@ export function isNumeric(n) {
   // eslint-disable-next-line no-restricted-globals
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
+
+export function decodeUnicode(a: String) {
+  const r = /\\u([\d\w]{4})/gi;
+  const changeFunc = (_match, grp) => {
+    return String.fromCharCode(parseInt(grp, 16));
+  };
+  const unicodeString = a.replace(r, changeFunc);
+  return unescape(unicodeString);
+}
+
+export function encodeUnicode(convertString: String) {
+  let unicodeString = '';
+  let i = 0;
+  for (i = 0; i < convertString.length; i++) {
+    let theUnicode = convertString
+      .charCodeAt(i)
+      .toString(16)
+      .toUpperCase();
+    while (theUnicode.length < 4) {
+      theUnicode = `0${theUnicode}`;
+    }
+    theUnicode = `\\u${theUnicode}`;
+    unicodeString += theUnicode;
+  }
+  return unicodeString;
+}
