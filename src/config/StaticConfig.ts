@@ -299,7 +299,7 @@ const TestNetCroeseid3Config: WalletConfig = {
 const TestnetCroeseid4: Network = {
   defaultNodeUrl: 'https://testnet-croeseid-4.crypto.org',
   chainId: 'testnet-croeseid-4',
-  addressPrefix: 'tcro',
+  addressPrefix: 'crc',
   validatorAddressPrefix: 'tcrocncl',
   validatorPubKeyPrefix: 'tcrocnclconspub',
   coin: {

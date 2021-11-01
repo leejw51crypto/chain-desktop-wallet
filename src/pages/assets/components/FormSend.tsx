@@ -122,6 +122,7 @@ const FormSend: React.FC<FormSendProps> = props => {
     try {
       setConfirmLoading(true);
 
+      alert('1');
       const sendResult = await walletService.sendTransfer({
         toAddress: formValues.recipientAddress,
         amount: formValues.amount,
@@ -130,6 +131,7 @@ const FormSend: React.FC<FormSendProps> = props => {
         decryptedPhrase,
         walletType,
       });
+      alert('2');
 
       analyticsService.logTransactionEvent(
         broadcastResult.transactionHash as string,
@@ -179,12 +181,6 @@ const FormSend: React.FC<FormSendProps> = props => {
   const currentMinAssetAmount = getCurrentMinAssetAmount(walletAsset!);
   const maximumSendAmount = availableBalance;
 
-  const customAddressValidator = TransactionUtils.addressValidator(
-    currentSession,
-    walletAsset!,
-    AddressType.USER,
-  );
-
   const customAmountValidator = TransactionUtils.validTransactionAmountValidator();
   const customMaxValidator = TransactionUtils.maxValidator(
     maximumSendAmount,
@@ -220,36 +216,11 @@ const FormSend: React.FC<FormSendProps> = props => {
         label={t('send.formSend.recipientAddress.label')}
         hasFeedback
         validateFirst
-        rules={[
-          {
-            required: true,
-            message: `${t('send.formSend.recipientAddress.label')} ${t('general.required')}`,
-          },
-          customAddressValidator,
-        ]}
       >
         <Input placeholder={t('send.formSend.recipientAddress.placeholder')} />
       </Form.Item>
       <div className="amount">
-        <Form.Item
-          name="amount"
-          label={t('send.formSend.amount.label')}
-          hasFeedback
-          validateFirst
-          rules={[
-            {
-              required: true,
-              message: `${t('send.formSend.amount.label')} ${t('general.required')}`,
-            },
-            {
-              pattern: /[^0]+/,
-              message: `${t('send.formSend.amount.label')} ${t('general.cannot0')}`,
-            },
-            customAmountValidator,
-            customMaxValidator,
-            customMinValidator,
-          ]}
-        >
+        <Form.Item name="amount" label={t('send.formSend.amount.label')} hasFeedback validateFirst>
           <InputNumber />
         </Form.Item>
         <div className="available">

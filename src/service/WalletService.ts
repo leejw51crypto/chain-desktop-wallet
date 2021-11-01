@@ -111,6 +111,7 @@ class WalletService {
   }
 
   public async sendTransfer(transferRequest: TransferRequest): Promise<BroadCastResult> {
+    alert(`sendTransfer=${JSON.stringify(transferRequest)}`);
     // eslint-disable-next-line no-console
     console.log('TRANSFER_ASSET', transferRequest.asset);
 
@@ -127,11 +128,12 @@ class WalletService {
           if (!currentAsset.address || !currentAsset.config?.nodeUrl) {
             throw TypeError(`Missing asset config: ${currentAsset.config}`);
           }
-
+          alert('a');
           const cronosClient = new CronosClient(
             currentAsset.config?.nodeUrl,
             currentAsset.config?.indexingUrl,
           );
+          alert('b');
 
           const transfer: TransferTransactionUnsigned = {
             fromAddress,
@@ -142,29 +144,35 @@ class WalletService {
             accountSequence: 0,
             asset: currentAsset,
           };
+          alert('c');
 
           const web3 = new Web3('');
           const txConfig: TransactionConfig = {
             from: currentAsset.address,
             to: transferRequest.toAddress,
             value: web3.utils.toWei(transferRequest.amount, 'ether'),
+            // value: '10000000000000000',
           };
+
+          alert('e');
 
           const prepareTxInfo = await this.transactionPrepareService.prepareEVMTransaction(
             currentAsset,
             txConfig,
           );
 
+          alert('f');
+
           transfer.nonce = prepareTxInfo.nonce;
           transfer.gasPrice = prepareTxInfo.loadedGasPrice;
           transfer.gasLimit = prepareTxInfo.gasLimit;
-
+          alert('g');
           const isMemoProvided = transferRequest.memo && transferRequest.memo.length > 0;
           // If transaction is provided with memo, add a little bit more gas to it to be accepted. 10% more
           transfer.gasLimit = isMemoProvided
             ? Number(transfer.gasLimit) + Number(transfer.gasLimit) * (10 / 100)
             : transfer.gasLimit;
-
+          alert('h');
           let signedTx = '';
           if (currentSession.wallet.walletType === LEDGER_WALLET_TYPE) {
             const device = createLedgerDevice();

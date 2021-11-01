@@ -69,6 +69,7 @@ export class TransactionPrepareService {
     if (!originAsset.config?.nodeUrl || !originAsset.address) {
       throw TypeError(`Missing asset config: ${originAsset.config}`);
     }
+    alert(`node=${originAsset.config?.nodeUrl}  indexing=${originAsset.config?.indexingUrl}`);
 
     const cronosClient = new CronosClient(
       originAsset.config?.nodeUrl,
