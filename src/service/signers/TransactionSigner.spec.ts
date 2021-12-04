@@ -1,5 +1,7 @@
 import 'mocha';
 import { expect } from 'chai';
+import * as fc from 'fast-check';
+import { Big } from 'big.js';
 import { DefaultWalletConfigs, WalletConfig } from '../../config/StaticConfig';
 import { TransactionSigner } from './TransactionSigner';
 import { TransactionUnsigned } from './TransactionSupported';
@@ -119,4 +121,34 @@ describe('Testing TransactionSigner', () => {
       '0xf8660c834c4b40824e20948875bf87684f46111dbc27725332cea9c0f12d39820159808202c7a0bff29ef22755a9b24de7415ce0096e3432639a9f43721364e9ed86b72e672583a04909c81e00403b06c6a1a692eedc1da87cb29fdd6622d7482ffb75c4c232fb04',
     );
   });
+});
+
+test('should transfer correctly', async () => {
+  const phrase =
+    'team school reopen cave banner pass autumn march immune album hockey region baby critic insect armor pigeon owner number velvet romance flight blame tone';
+
+  fc.assert(
+    fc.asyncProperty(
+      fc.integer({ min: 1, max: 100000000000 }),
+      fc.bigInt(BigInt('1'), BigInt('100000000000000000000000000000000')),
+      async (a, b) => {
+        const transferTxSignedHex = await evmTransactionSigner.signTransfer(
+          {
+            amount: b.toString(),
+            fromAddress: '0xc2aFcEC3DAfAF1a4f47030eE35Fd1A1231C08256',
+            gasLimit: a,
+            gasPrice: 5_000_000,
+            nonce: 12,
+            toAddress: '0x8875bF87684f46111dbc27725332CEA9C0f12D39',
+            accountNumber: 0,
+            accountSequence: 0,
+            memo: '',
+          },
+          phrase,
+        );
+        return true;
+      },
+    ),
+    { verbose: true },
+  );
 });

@@ -1,5 +1,7 @@
 import 'mocha';
 import { expect } from 'chai';
+import * as fc from 'fast-check';
+import { Big } from 'big.js';
 import {
   adjustedTransactionAmount,
   fromScientificNotation,
@@ -96,4 +98,65 @@ describe('Testing Number utils', () => {
     expect(adjustedTransactionAmount('0.245', asset, networkFee)).to.eq('0.2449');
     expect(adjustedTransactionAmount('0.1223', asset, networkFee)).to.eq('0.1223');
   });
+});
+
+export function bigAdd2(a: Big, b: Big): Big {
+  /* if (a < 0) {
+      a = a * a;
+    } */
+  const sum = a.plus(b);
+  return sum;
+}
+
+test('should add Big correctly', () => {
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 4, max: 16 }),
+      fc.bigInt(BigInt('0'), BigInt('100000000000000000000000000000000')),
+      fc.bigInt(BigInt('0'), BigInt('100000000000000000000000000000000')),
+
+      (a, b, c) => {
+        const { networkFee } = DefaultWalletConfigs.TestNetConfig.fee;
+        ///.plus(Big(networkFee));
+        const asset: UserAsset = {
+          decimals: a,
+          mainnetSymbol: '',
+          balance: c.toString(),
+          description: 'The best asset',
+          icon_url: 'some url',
+          identifier: 'cbd4bab2cbfd2b3',
+          name: 'Best Asset',
+          symbol: 'BEST',
+          walletId: '',
+          stakedBalance: '0',
+          unbondingBalance: '0',
+          rewardsBalance: '0',
+        };
+
+        const b2 = adjustedTransactionAmount(b.toString(), asset, networkFee);
+        expect(Big(b2).gte(Big('0'))).to.eq(true);
+        expect(Big(b2).lte(Big(b.toString()))).to.eq(true);
+        return true;
+      },
+    ),
+    { verbose: true },
+  );
+});
+
+test('should scale correctly', () => {
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 4, max: 16 }),
+      fc.bigInt(BigInt('1'), BigInt('100000000000000000000000000000000')),
+      (a, b) => {
+        const scaled = getUINormalScaleAmount(b.toString(), a, a);
+        const back = Big(10)
+          .pow(a)
+          .mul(Big(scaled));
+        expect(back.toFixed()).to.eq(Big(b.toString()).toFixed());
+        return true;
+      },
+    ),
+    { verbose: true },
+  );
 });

@@ -87,7 +87,11 @@ export function adjustedTransactionAmount(
   const fixedFee = getNormalScaleAmount(currentFee, walletAsset);
   const amountAndFee = Big(formAmount).add(fixedFee);
   if (amountAndFee.gt(availableBalance)) {
-    return availableBalance.minus(fixedFee).toFixed();
+    if (availableBalance.gte(fixedFee)) {
+      return availableBalance.minus(fixedFee).toFixed();
+    } else {
+      return '0';
+    }
   }
   return formAmount.toString();
 }

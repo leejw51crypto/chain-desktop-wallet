@@ -35,7 +35,7 @@ export interface ICronosChainIndexAPI {
   ): Promise<PendingTxListAPIResponse>;
 
   // - Token transfers event logs by address
-  //?module=account&action=tokentx&address={addressHash}
+  // ?module=account&action=tokentx&address={addressHash}
   getTokenTransfersByAddress(
     address: string,
     options?: tokenTransfersRequestOptions,
