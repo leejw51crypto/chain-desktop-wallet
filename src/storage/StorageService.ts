@@ -203,7 +203,7 @@ export class StorageService {
     );
   }
 
-  public async saveAsset(asset: UserAsset) {
+  public async saveAsset(asset: UserAsset) {  
     return this.db.assetStore.update<UserAsset>(
       { _id: asset.identifier },
       { $set: asset },

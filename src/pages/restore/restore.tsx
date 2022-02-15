@@ -322,6 +322,8 @@ const FormRestore: React.FC<FormRestoreProps> = props => {
   };
 
   const onWalletImportFinish = async (password: string) => {
+    // eslint-disable-next-line no-console
+    console.log('onWalletImportFinish==============');
     setIsButtonLoading(true);
     const { name, mnemonic, network } = props.form.getFieldsValue();
     if (!name || !mnemonic || !network) {

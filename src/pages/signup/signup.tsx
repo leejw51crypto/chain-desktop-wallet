@@ -23,9 +23,19 @@ const SignUpPage = () => {
   const [t] = useTranslation();
 
   const handlePasswordSubmitted = async (password: string) => {
+    // eslint-disable-next-line
+    console.log('handlePasswordSubmitted==========='); 
     const salt = cryptographer.generateSalt();
+    // eslint-disable-next-line
+    console.log('handlePasswordSubmitted1');
     const hashResult = cryptographer.computeHash(password, salt);
+    // eslint-disable-next-line
+    console.log('handlePasswordSubmitted2a');
     await secretStoreService.savePassword({ hash: hashResult });
+     // eslint-disable-next-line
+     console.log('handlePasswordSubmitted3');
+    // eslint-disable-next-line
+    console.log('hashResult', hashResult);
     setDisplayComponent('wallet');
   };
   const handlePasswordCancelled = () => {};

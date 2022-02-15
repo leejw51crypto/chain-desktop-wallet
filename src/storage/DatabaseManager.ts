@@ -1,7 +1,10 @@
 import Datastore from 'nedb-promises';
 
 function getStore(namespace: string, store: string) {
-  return Datastore.create(`./data/${namespace}.${store}.db`);
+  // eslint-disable-next-line
+  console.log(`getStore nameSpace: ${namespace} store: ${store}`);
+  const p= `./data/${namespace}.${store}.db`;
+  return Datastore.create(p);
 }
 
 export class DatabaseManager {

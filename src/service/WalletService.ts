@@ -277,12 +277,15 @@ class WalletService {
 
   public async saveAssets(userAssets: UserAsset[]) {
     // eslint-disable-next-line no-console
-    console.log('SAVING_ASSETS', { userAssets });
+    console.log('SAVING_ASSETS started', { userAssets });
     // eslint-disable-next-line no-restricted-syntax
 
     await userAssets.map(async asset => {
       await this.storageService.saveAsset(asset);
     });
+
+     // eslint-disable-next-line no-console
+     console.log('SAVING_ASSETS done', { userAssets });
   }
 
   public async getAllNFTAccountTxs(

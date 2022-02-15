@@ -1,22 +1,56 @@
+import Datastore from 'nedb-promises';
 import { DatabaseManager } from './DatabaseManager';
 import { EncryptedCredential, EncryptedSeed, EncryptionResult } from '../models/SecretStorage';
 import { cryptographer } from '../crypto/Cryptographer';
 
+
 export class SecretStoreService {
   private readonly db: DatabaseManager;
+
+  private mydb: Datastore;
 
   private readonly CREDENTIAL_STORED_ID = 'CREDENTIAL_STORED_ID';
 
   constructor(namespace: string) {
     this.db = new DatabaseManager(namespace);
+    const p= `./data/fruit.apple.db`;
+    this.mydb=Datastore.create(p);
+  }
+
+  public async test_db() : Promise<void> {
+    // eslint-disable-next-line
+    alert("testing db....");
+
+    await this.mydb.insert({apple: "computer"});
+    
+     // eslint-disable-next-line
+     alert("finding db....");
+     
+    const docs=await this.mydb.find({apple: "computer"});
+    // eslint-disable-next-line
+    console.log(docs);
+    // eslint-disable-next-line
+    alert(`found db ${docs}`);
+  
+
   }
 
   public async savePassword(credential: EncryptedCredential) {
-    return this.db.credentialStore.update<EncryptedCredential>(
+    // eslint-disable-next-line
+    alert("test2");
+    await this.test_db();
+    // eslint-disable-next-line
+    alert("test3");
+
+    // eslint-disable-next-line
+    console.log('savePassword-1...............', JSON.stringify(credential)); 
+    await this.db.credentialStore.update<EncryptedCredential>(
       { _id: this.CREDENTIAL_STORED_ID },
-      { $set: credential },
+      { $set: credential },  
       { upsert: true },
     );
+     // eslint-disable-next-line
+     console.log('savePassword===========2'); 
   }
 
   public async hasPasswordBeenSet(): Promise<boolean> {
