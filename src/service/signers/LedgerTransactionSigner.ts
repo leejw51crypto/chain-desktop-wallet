@@ -14,13 +14,38 @@ import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { toBase64, toHex } from '@crypto-org-chain/chain-jslib/node_modules/@cosmjs/encoding';
 import Long from 'long';
 import { MsgSend } from 'cosmjs-types/cosmos/bank/v1beta1/tx';
-import { MsgSendEncodeObject } from '@cosmjs/stargate';
 import { Big, Units, Secp256k1KeyPair } from '../../utils/ChainJsLib';
 import {
   DEFAULT_IBC_TRANSFER_TIMEOUT,
   SupportedChainName,
   WalletConfig,
 } from '../../config/StaticConfig';
+import {
+  AminoConverters,
+  AminoTypes,
+  createAuthzAminoConverters,
+  createBankAminoConverters,
+  createDistributionAminoConverters,
+  createFreegrantAminoConverters,
+  createGovAminoConverters,
+  createIbcAminoConverters,
+  createStakingAminoConverters,
+  createVestingAminoConverters,
+  authzTypes,
+  bankTypes,
+  distributionTypes,
+  feegrantTypes,
+  govTypes,
+  ibcTypes,
+  // MsgDelegateEncodeObject,
+  MsgSendEncodeObject,
+  // MsgTransferEncodeObject,
+  // MsgUndelegateEncodeObject,
+  // MsgWithdrawDelegatorRewardEncodeObject,
+  stakingTypes,
+  vestingTypes,
+} from '@cosmjs/stargate';
+
 import {
   RestakeStakingRewardTransactionUnsigned,
   RestakeStakingAllRewardsTransactionUnsigned,
@@ -44,6 +69,38 @@ import { BaseTransactionSigner, ITransactionSigner } from './TransactionSigner';
 import { isNumeric } from '../../utils/utils';
 import { DerivationPathStandard } from './LedgerSigner';
 
+function createDefaultTypes(prefix: string): AminoConverters {
+  return {
+    ...createAuthzAminoConverters(),
+    ...createBankAminoConverters(),
+    ...createDistributionAminoConverters(),
+    ...createGovAminoConverters(),
+    ...createStakingAminoConverters(prefix),
+    ...createIbcAminoConverters(),
+    ...createFreegrantAminoConverters(),
+    ...createVestingAminoConverters(),
+  };
+}
+
+
+export const defaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
+  ["/cosmos.base.v1beta1.Coin", Coin],
+  ...authzTypes,
+  ...bankTypes,
+  ...distributionTypes,
+  ...feegrantTypes,
+  ...govTypes,
+  ...stakingTypes,
+  ...ibcTypes,
+  ...vestingTypes,
+];
+
+function createDefaultRegistry(): Registry {
+  return new Registry(defaultRegistryTypes);
+}
+
+
+  
 export class LedgerTransactionSigner extends BaseTransactionSigner implements ITransactionSigner {
   public readonly config: WalletConfig;
 
@@ -53,17 +110,25 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
 
   public readonly derivationPathStandard: DerivationPathStandard;
 
+  public aminoTypes: AminoTypes;
+
+  public registry : Registry;
+
   constructor(
     config: WalletConfig,
     signerProvider: ISignerProvider,
     addressIndex: number,
     derivationPathStandard: DerivationPathStandard,
   ) {
+    
+
     super(config);
     this.config = config;
     this.signerProvider = signerProvider;
     this.addressIndex = addressIndex;
     this.derivationPathStandard = derivationPathStandard;
+    this.aminoTypes = new AminoTypes(createDefaultTypes("cosmos"));
+    this.registry = createDefaultRegistry();
   }
 
   public getTransactionInfo(
