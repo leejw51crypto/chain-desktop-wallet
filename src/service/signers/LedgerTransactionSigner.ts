@@ -9,8 +9,8 @@ import {
   // makeSignDoc,
   // makeSignBytes,
 } from '@cosmjs/stargate/node_modules/@cosmjs/proto-signing';
-import {  makeSignDoc, serializeSignDoc } from '@cosmjs/amino';
-import { toBase64, toHex } from '@crypto-org-chain/chain-jslib/node_modules/@cosmjs/encoding';
+import { encodeSecp256k1Pubkey, makeSignDoc, serializeSignDoc } from '@cosmjs/amino';
+import {  toHex } from '@crypto-org-chain/chain-jslib/node_modules/@cosmjs/encoding';
 import Long from 'long';
 import { Big, Units, Secp256k1KeyPair } from '../../utils/ChainJsLib';
 import {
@@ -46,12 +46,14 @@ import { ISignerProvider } from './SignerProvider';
 import { BaseTransactionSigner, ITransactionSigner } from './TransactionSigner';
 import { isNumeric } from '../../utils/utils';
 import { DerivationPathStandard } from './LedgerSigner';
-import { TxRaw, TxBody, AuthInfo} from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import {  TxRaw, TxBody, AuthInfo} from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 
 function showTxRaw(txrawbytes: Uint8Array) {
+
   // convert Tx from txrawbytes 
   const txraw = TxRaw.decode(txrawbytes);
+  const registry= new Registry();
   
   console.log("txraw josn:", JSON.stringify(txraw));
 
@@ -60,6 +62,23 @@ function showTxRaw(txrawbytes: Uint8Array) {
   console.log("body json:", JSON.stringify(body));
   console.log("authInfo json:", JSON.stringify(authInfo));
   console.log("signature:", JSON.stringify(txraw.signatures));
+
+
+  
+  // convert any to MsgSend
+  // const msgSend = MsgSend.decode(body.messages[0]);
+  const message= body.messages[0];
+
+  // print message.typeUrl
+  console.log("message typeUrl:", message.typeUrl);
+  // print message.value
+  console.log("message value:", JSON.stringify(message.value));
+  const sendmessage=registry.decode(message);
+  console.log("message:", JSON.stringify(sendmessage));
+
+
+
+  
 }
 
 
@@ -140,6 +159,7 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
         gas: gasLimit,
       };
       
+      console.log("address index=",this.derivationPathStandard, "  derivationPathStandard=", this.derivationPathStandard);
       const pubkeyBytes = (
         await this.signerProvider.getPubKey(
           this.addressIndex,
@@ -148,10 +168,32 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
           false,
         )
       ).toUint8Array();
-      const pubkey = encodePubkey({
+      /* const pubkey = encodePubkey({
         type: 'tendermint/PubKeySecp256k1',
         value: toBase64(pubkeyBytes),
-      });
+      }); */ 
+      // this is 34 bytes, 33 length itself, 0x02 pr 0x03
+      console.log("adddress index=",this.addressIndex, "  derivationPathStandard=", this.derivationPathStandard);
+      console.log("pubkey:", toHex(pubkeyBytes));
+      console.log("pubkey json:", JSON.stringify(pubkeyBytes));
+      /*
+      
+    export function encodeSecp256k1Pubkey(pubkey: Uint8Array): Secp256k1Pubkey {
+      if (pubkey.length !== 33 || (pubkey[0] !== 0x02 && pubkey[0] !== 0x03)) {
+        throw new Error("Public key must be compressed secp256k1, i.e. 33 bytes starting with 0x02 or 0x03");
+      }
+      return {
+        type: pubkeyType.secp256k1,
+        value: toBase64(pubkey),
+      };
+    }
+
+      */
+      // cut first byte of pubkeyBytes
+      // pubkeyBytes is 34 bytes, first byte is length itself, 33
+      const pupubkeyBytes33length = pubkeyBytes.slice(1);
+      const pubkey = encodePubkey(encodeSecp256k1Pubkey(pupubkeyBytes33length));
+
       console.log("pubkey=", pubkey);
       console.log("pubkey json=", JSON.stringify(pubkey));
       // amino json auto info bytes
