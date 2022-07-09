@@ -9,11 +9,9 @@ import {
   // makeSignDoc,
   // makeSignBytes,
 } from '@cosmjs/stargate/node_modules/@cosmjs/proto-signing';
-import { AminoMsg, makeSignDoc, serializeSignDoc } from '@cosmjs/amino';
-import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import {  makeSignDoc, serializeSignDoc } from '@cosmjs/amino';
 import { toBase64, toHex } from '@crypto-org-chain/chain-jslib/node_modules/@cosmjs/encoding';
 import Long from 'long';
-import { MsgSend } from 'cosmjs-types/cosmos/bank/v1beta1/tx';
 import { Big, Units, Secp256k1KeyPair } from '../../utils/ChainJsLib';
 import {
   DEFAULT_IBC_TRANSFER_TIMEOUT,
@@ -21,30 +19,10 @@ import {
   WalletConfig,
 } from '../../config/StaticConfig';
 import {
-  AminoConverters,
-  AminoTypes,
-  createAuthzAminoConverters,
   createBankAminoConverters,
-  createDistributionAminoConverters,
-  createFreegrantAminoConverters,
-  createGovAminoConverters,
-  createIbcAminoConverters,
-  createStakingAminoConverters,
-  createVestingAminoConverters,
-  authzTypes,
-  bankTypes,
-  distributionTypes,
-  feegrantTypes,
-  govTypes,
-  ibcTypes,
-  // MsgDelegateEncodeObject,
-  MsgSendEncodeObject,
-  // MsgTransferEncodeObject,
-  // MsgUndelegateEncodeObject,
-  // MsgWithdrawDelegatorRewardEncodeObject,
-  stakingTypes,
-  vestingTypes,
+  AminoTypes,
 } from '@cosmjs/stargate';
+
 
 import {
   RestakeStakingRewardTransactionUnsigned,
@@ -68,36 +46,22 @@ import { ISignerProvider } from './SignerProvider';
 import { BaseTransactionSigner, ITransactionSigner } from './TransactionSigner';
 import { isNumeric } from '../../utils/utils';
 import { DerivationPathStandard } from './LedgerSigner';
+import { TxRaw, TxBody, AuthInfo} from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
-function createDefaultTypes(prefix: string): AminoConverters {
-  return {
-    ...createAuthzAminoConverters(),
-    ...createBankAminoConverters(),
-    ...createDistributionAminoConverters(),
-    ...createGovAminoConverters(),
-    ...createStakingAminoConverters(prefix),
-    ...createIbcAminoConverters(),
-    ...createFreegrantAminoConverters(),
-    ...createVestingAminoConverters(),
-  };
+
+function showTxRaw(txrawbytes: Uint8Array) {
+  // convert Tx from txrawbytes 
+  const txraw = TxRaw.decode(txrawbytes);
+  
+  console.log("txraw josn:", JSON.stringify(txraw));
+
+  const body = TxBody.decode(txraw.bodyBytes);
+  const authInfo =AuthInfo.decode(txraw.authInfoBytes);
+  console.log("body json:", JSON.stringify(body));
+  console.log("authInfo json:", JSON.stringify(authInfo));
+  console.log("signature:", JSON.stringify(txraw.signatures));
 }
 
-
-export const defaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
-  ["/cosmos.base.v1beta1.Coin", Coin],
-  ...authzTypes,
-  ...bankTypes,
-  ...distributionTypes,
-  ...feegrantTypes,
-  ...govTypes,
-  ...stakingTypes,
-  ...ibcTypes,
-  ...vestingTypes,
-];
-
-function createDefaultRegistry(): Registry {
-  return new Registry(defaultRegistryTypes);
-}
 
 
   
@@ -110,7 +74,6 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
 
   public readonly derivationPathStandard: DerivationPathStandard;
 
-  public aminoTypes: AminoTypes;
 
   public registry : Registry;
 
@@ -127,8 +90,7 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
     this.signerProvider = signerProvider;
     this.addressIndex = addressIndex;
     this.derivationPathStandard = derivationPathStandard;
-    this.aminoTypes = new AminoTypes(createDefaultTypes("cosmos"));
-    this.registry = createDefaultRegistry();
+    this.registry = new Registry();
   }
 
   public getTransactionInfo(
@@ -166,30 +128,7 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
       transaction.asset?.config?.tendermintNetwork &&
       transaction.asset?.config?.tendermintNetwork?.chainName !== SupportedChainName.CRYPTO_ORG
     ) {
-      const registry = new Registry();
       const network = transaction.asset?.config?.tendermintNetwork;
-      const msg = MsgSend.fromPartial({
-        fromAddress: transaction.fromAddress,
-        toAddress: transaction.toAddress,
-        amount: [
-          {
-            denom: network.coin.baseDenom,
-            amount: String(transaction.amount),
-          },
-        ],
-      });
-
-      const msgAny: MsgSendEncodeObject = {
-        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
-        value: msg,
-      };
-
-      const txBodyFields: TxBodyEncodeObject = {
-        typeUrl: '/cosmos.tx.v1beta1.TxBody',
-        value: {
-          messages: [msgAny],
-        },
-      };
 
       const fee = {
         amount: [
@@ -200,9 +139,7 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
         ],
         gas: gasLimit,
       };
-      // // eslint-disable-next-line
-      const txBodyBytes = registry.encode(txBodyFields);
-
+      
       const pubkeyBytes = (
         await this.signerProvider.getPubKey(
           this.addressIndex,
@@ -215,6 +152,9 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
         type: 'tendermint/PubKeySecp256k1',
         value: toBase64(pubkeyBytes),
       });
+      console.log("pubkey=", pubkey);
+      console.log("pubkey json=", JSON.stringify(pubkey));
+      // amino json auto info bytes
       const authInfoBytes = makeAuthInfoBytes(
         [{ pubkey, sequence: transaction.accountSequence }],
         fee.amount,
@@ -225,18 +165,39 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
       console.log('transaction', transaction);
 
       const chainId = network.chainId ?? '';
-      const msg1: AminoMsg = {
-        type: 'cosmos-sdk/MsgSend',
-        value: {
-          fromAddress: transaction.fromAddress,
-          toAddress: transaction.toAddress,
-          amount: {
-            denom: network.coin.baseDenom,
-            amount: String(transaction.amount),
-          },
-        },
-      };
 
+      const sendmsg: MsgSendEncodeObject = {
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: {
+          fromAddress:  transaction.fromAddress,
+          toAddress: transaction.toAddress,
+          amount: [
+            {
+              "denom": network.coin.baseDenom,
+              "amount": String(transaction.amount)
+            }
+          ],
+        }}
+        ;
+
+        const converter= new AminoTypes(createBankAminoConverters());
+        const msg1= converter.toAmino(sendmsg);
+        // normalized sendmsg
+        const msg2= converter.fromAmino(msg1);
+        
+
+        const signedTxBody = {
+          messages: [msg2],
+          memo: transaction.memo,
+        };
+        const signedTxBodyEncodeObject: TxBodyEncodeObject = {
+          typeUrl: "/cosmos.tx.v1beta1.TxBody",
+          value: signedTxBody,
+        };
+        console.log("signed tx=",signedTxBodyEncodeObject);
+        console.log("signed tx json=", JSON.stringify(signedTxBodyEncodeObject));
+        const signedTxBodyBytes = this.registry.encode(signedTxBodyEncodeObject);
+    
       const fee2 = {
         amount: [
           {
@@ -266,14 +227,23 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
 
       console.log('cosmosHub signature', signature);
 
+      // display signedTxBodyBytes
+      console.log("signedTxBodyBytes length=" ,signedTxBodyBytes.length); 
       const txRaw = TxRaw.fromPartial({
-        bodyBytes: txBodyBytes,
+        bodyBytes: signedTxBodyBytes,
         authInfoBytes,
         signatures: [signature.toUint8Array()],
       });
+      // display txRaw
+      console.log('cosmosHub txRaw', txRaw);
+
+      // get signed tx from TxRaw
+  
+      console.log('cosmosHub signedTx', signedTxBodyBytes);
       const signedBytes = Uint8Array.from(TxRaw.encode(txRaw).finish());
       const txHash = toHex(signedBytes);
-
+      showTxRaw(signedBytes);
+      console.log("txhash=", txHash);
       return txHash;
     }
     const { cro, rawTx } = this.getTransactionInfo(phrase, transaction, gasFee, gasLimit);
@@ -286,6 +256,8 @@ export class LedgerTransactionSigner extends BaseTransactionSigner implements IT
 
     return this.getSignedMessageTransaction(transaction, [msgSend], rawTx);
   }
+
+
 
   public async signVoteTransaction(
     transaction: VoteTransactionUnsigned,
