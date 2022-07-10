@@ -113,12 +113,14 @@ export const ATOM_TENDERMINT_ASSET = (walletConfig: WalletConfig) => {
     isLedgerSupportDisabled: true,
     isStakingDisabled: true,
     nodeUrl: isTestnet
-      ? 'http://127.0.0.1:26657'
+      // ? 'http://127.0.0.1:26657'
+      ? 'https://rpc.sentry-01.theta-testnet.polypore.xyz'
       : 'https://eth-indexing.crypto.org/cosmos/mainnet/rpc',
     memoSupportDisabled: false,
     tendermintNetwork: {
       defaultNodeUrl: isTestnet
-        ? 'http://127.0.0.1:26657'
+        // ? 'https://rpc.sentry-01.theta-testnet.polypore.xyz'
+        ? 'https://rpc.sentry-01.theta-testnet.polypore.xyz'
         : 'https://eth-indexing.crypto.org/cosmos/mainnet/rpc',
       chainName: SupportedChainName.COSMOS_HUB,
       chainId: isTestnet ? 'theta-testnet-001' : 'cosmoshub-4',
@@ -129,7 +131,8 @@ export const ATOM_TENDERMINT_ASSET = (walletConfig: WalletConfig) => {
       coin: { baseDenom: 'uatom', croDenom: 'atom', denom: 'atom' },
       node: {
         clientUrl: isTestnet
-          ? 'http://127.0.0.1:26657'
+          // ? 'http://127.0.0.1:26657'
+          ? 'https://rpc.sentry-01.theta-testnet.polypore.xyz'
           : 'https://eth-indexing.crypto.org/cosmos/mainnet/rpc',
         proxyUrl: isTestnet
           ? 'https://rest.sentry-01.theta-testnet.polypore.xyz'
